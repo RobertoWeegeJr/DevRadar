@@ -3,6 +3,8 @@ const Dev = require('../models/Dev');
 
 const parseStringAsArray = require('../Utils/parseStringAsArray')
 
+const { findConnections, sendMessage } = require('../websocket')
+
 module.exports = {
 
     async index(req, res){
@@ -18,7 +20,13 @@ module.exports = {
 
         if (!dev) {
 
-            const hg_response = await axios.get(`https://api.github.com/users/${github_username}`);
+            let hg_response;
+
+            try {
+                hg_response = await axios.get(`https://api.github.com/users/${github_username}`);
+            } catch (e) {
+                console.log(e)
+            }
             
             let {name, login, avatar_url, bio} = hg_response.data; 
             name = name || login;
@@ -36,6 +44,13 @@ module.exports = {
                 techs: techsArray,
                 location
             });
+
+            const sendSocketMessageTo = findConnections(
+                {latitude, longitude}, techsArray,
+            )
+
+            sendMessage(sendSocketMessageTo, 'new-dev', dev);
+
         }
         return res.json(dev);
 

@@ -25,9 +25,6 @@ module.exports = {
                 },
             },
         });
-
-        console.log(latitude, longitude);
-
         return res.json(devs);
     }
 
